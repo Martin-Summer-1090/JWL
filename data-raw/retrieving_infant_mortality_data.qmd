@@ -221,7 +221,16 @@ deaths <- read.csv("~/R/Statistics_JWL/data/infant_mortality/number-of-infant-de
 names(deaths) <- c("Country", "Code", "Year", "Deaths")
 ```
 
+Add fertility data
+
+```{r}
+fertility <- read.csv("~/R/Statistics_JWL/data/infant_mortality/children-per-woman-UN.csv")
+names(fertility) <- c("Country", "Code", "Year", "Children")
+```
+
 ```{r}
 infant_mortality_b <- left_join(infant_mortality, births, by = c("Country", "Code", "Year"))
-infant_mortality_data <- left_join(infant_mortality_b, deaths, by = c("Country", "Code", "Year"))
+infant_mortality_c <- left_join(infant_mortality_b, deaths, by = c("Country", "Code", "Year"))
+
+infant_mortality_data <- left_join(infant_mortality_c, fertility, by = c("Country", "Code", "Year"))
 ```

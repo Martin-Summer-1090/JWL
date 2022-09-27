@@ -14,6 +14,7 @@
 #'   \item{Population}{Population, num, number of people in a country in a given year}
 #'   \item{Births}{Births, num, number of births in a year}
 #'   \item{Deaths}{Deaths, num, number of deaths of infants (under 1 year of age) in a year}
+#'   \item{Children}{Children, num, number of children per woman}
 #' }
 #' @source \url{ https://www.gapminder.org/} and \url{https://ourworldindata.org/}
 "infant_mortality_data"
