@@ -1,0 +1,11 @@
+---
+title: "college_years_and_starting_salaries"
+author: "Martin Summer"
+format: html
+editor: visual
+---
+
+```{r}
+# data from our project data folder
+col_sal <- read.csv("~/R/Statistics_JWL/data/college_years_salaries/coll_sal.csv") 
+```

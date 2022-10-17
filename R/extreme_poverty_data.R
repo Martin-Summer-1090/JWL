@@ -1,0 +1,15 @@
+#' Share of population living in extreme poverty around the world 1967 -2021.
+#'
+#' Share of population living in extreme poverty
+#' Extreme poverty is defined as living below the International Poverty Line of $1.90 per day. This data is
+#' adjusted for inflation and for differences in the cost of living between countries.
+#'
+#' @format A data frame with 6953 rows and 4 variables:
+#' \describe{
+#'   \item{Entity}{Country name or name of an aggregate region, chr}
+#'   \item{Code}{ISO3 code of country, chr}
+#'   \item{Year}{Year, num, year of observation}
+#'   \item{Share}{Share of extremely poor people in a given year in a given entity, num, percentage of people living below a daily amoungt of 1.90 USD}
+#' }
+#' @source \url{https://ourworldindata.org/extreme-poverty} and \url{https://pip.worldbank.org/}
+"povdat_by_country"

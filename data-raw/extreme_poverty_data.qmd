@@ -1,0 +1,15 @@
+---
+title: "extreme_poverty"
+author: "Martin Summer"
+format: html
+editor: visual
+---
+
+## Data on the share of extremely poor people in the world
+
+```{r}
+# read poverty data from our project data folder
+povdat_by_country <- read.csv("~/R/Statistics_JWL/data/extreme_poverty/share-of-population-in-extreme-poverty.csv")
+
+names(povdat_by_country) <- c("Entity", "Code", "Year", "Share")
+```
