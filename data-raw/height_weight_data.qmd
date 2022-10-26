@@ -1,0 +1,20 @@
+---
+title: "height_weight"
+author: "Martin Summer"
+format: html
+editor: visual
+---
+
+```{r}
+height_weight <- read.csv2("~/R/Statistics_JWL/data/height_weight/height-weight.csv")
+names(height_weight) <- c("age_at_death", "age", "state", "sex", "height", "weight")
+
+height_weight$age_at_death <- as.numeric(height_weight$age_at_death)
+height_weight$age <- as.numeric(height_weight$age)
+height_weight$state <- as.factor(height_weight$state)
+height_weight$sex <- as.factor(height_weight$sex)
+height_weight$height <- as.numeric(height_weight$height)
+height_weight$weight <- as.numeric(height_weight$weight)
+
+```
+
