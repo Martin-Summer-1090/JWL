@@ -17,4 +17,3 @@ height_weight$height <- as.numeric(height_weight$height)
 height_weight$weight <- as.numeric(height_weight$weight)
 
 ```
-

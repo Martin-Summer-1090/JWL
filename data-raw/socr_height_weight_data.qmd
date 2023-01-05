@@ -1,0 +1,28 @@
+?socr---
+title: "SOCR height weight data"
+author: "Martin Summer"
+format: html
+editor: visual
+---
+
+## SOCR Data - 25,000 Records of Human Heights (in) and Weights (lbs)
+
+Summary
+
+Human Height and Weight Human Height and Weight are mostly hereditable, but lifestyles, diet, health and environmental factors also play a role in determining individual's physical characteristics. The dataset below contains 25,000 synthetic records of human heights and weights of 18 years old children. These data were simulated based on a 1993 by a Growth Survey of 25,000 children from birth to 18 years of age recruited from Maternal and Child Health Centres (MCHC) and schools and were used to develop Hong Kong's current growth charts for weight, height, weight-for-age, weight-for-height and body mass index (BMI).
+
+```{r}
+library(XML)
+
+table <- readHTMLTable("http://socr.ucla.edu/docs/resources/SOCR_Data/SOCR_Data_Dinov_020108_HeightsWeights.html")
+
+socr_height_weight <- as.data.frame(table[[1]])[-1, ]
+
+names(socr_height_weight) <- c("Index", "Height", "Weight")
+
+socr_height_weight$Index <- as.numeric(socr_height_weight$Index)
+socr_height_weight$Height <- as.numeric(socr_height_weight$Height)
+socr_height_weight$Weight <- as.numeric(socr_height_weight$Weight)
+
+write.csv(socr_height_weight, "~/R/Statistics_JWL/data/height_weight/socr_height_weight.csv")
+```

@@ -1,0 +1,15 @@
+---
+title: "average_height_of_men_and_women"
+format: html
+editor: visual
+---
+
+Read the data:
+
+```{r}
+height_men <- read.csv("~/R/Statistics_JWL/data/height_weight/average-height-of-men.csv", stringsAsFactors = F)
+height_women <- read.csv("~/R/Statistics_JWL/data/height_weight/average-height-of-women.csv", stringsAsFactors = F)
+
+names(height_men) <- c("Entity", "Code", "Year", "Height")
+names(height_women) <- c("Entity", "Code", "Year", "Height")
+```

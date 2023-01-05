@@ -1,0 +1,40 @@
+#' Nutrition data for children under age 5 from the demographic and health survey DHS training data set
+#'
+#' The DHS Program has created model datasets so users can become familiar
+#' with datasets without having to register for access. These datasets have
+#' been created strictly for practice and do not represent any country's actual data.
+#' Model datasets are based on the DHS 6 Questionnaire and Recode.
+#' The model datasets are designed to include a wide variety of survey characteristics and topics including:
+#' Alcohol Consumption, Anemia Questions, Anthropometry, Birth Registration Calendar, Child Labor,
+#' Cooking Fuel, Domestic Violence, Female Genital Cutting, Health Insurance, HIV Behavior, HIV Knowledge
+#' HIV Testing, Malaria Module including Bednet Inventory, Malaria and Bednet Questions
+#' Malaria Parasitemia, Male Circumcision, Maternal Mortality, Man's Survey, Tobacco Use, Vitamin A Questions
+#' Women's Status
+#'
+#' This dataset was compiled from the model data sets at https://dhsprogram.com/data/Download-Model-Datasets.cfm
+#' and reports data on children nutrition indicators, such as we would find them in a real life field survey.
+#' Here we use them as a training of the R concepts and statistical concepts we have learned in the first
+#' three lectures of our course.
+#'
+#' @format A data frame with 2559 rows and 16 variables:
+#' \describe{
+#'   \item{wt}{survey weight of observational unit, num}
+#'   \item{age_in_months}{age of child in months, fct with 8 levels "< 6", "6 -8", "9 - 11", "12 - 17", "18 - 23", "24 - 35", "36 - 47", "48 - 59"}
+#'   \item{sex}{sex, fct with two levels female, male}
+#'   \item{type_of_residence}{residence type, fct wit two levels rural, urban}
+#'   \item{region}{region, fct with 4 levels region1, region2, region3, region4}
+#'   \item{wealth_index}{wealt index, fct with 5 levels lowest, second, middle, fourths, highest}
+#'   \item{nt_ch_sev_stunt}{whether the child is severly stunted as measured by 3 standard deviations below the world health organisation reference z-score for the same age group, logical TRUE if severely stunted, FALSE otherwise}
+#'   \item{nt_ch_stunt}{whether the child is severly stunted as measured by 2 standard deviations below the world health organisation reference z-score for the same age group, logical TRUE if stunted, FALSE otherwise}
+#'   \item{nt_ch_haz}{z-score of the height for age group of the child, num}
+#'   \item{nt_ch_sev_wast}{whether the child is severly wasted as measured by 3 standard deviations below the world health organisation reference z-score for the same age group, logical TRUE if severely wasted, FALSE otherwise}
+#'   \item{nt_ch_wast}{whether the child is wasted as measured by 2 standard deviations below the world health organisation reference z-score for the same age group, logical TRUE if wasted, FALSE otherwise}
+#'   \item{nt_ch_ovwt_ht}{whether the weight for height of a child is above 2 standard deviations the world health organisation referecne z-score for the same age group, logical, TRUE if overweight, FALSE otherwise}
+#'   \item{nt_ch_whz}{weight for height z score of child, num}
+#'   \item{nt_ch_sev_underwt}{whether a child's weight for age shows extreme underweight, this is the case if the weight is 3 standard deviations or more below the z score of a reference value of the world health organiation, logical, TRUE if severe underweight, FALSE otherwise}
+#'   \item{nt_ch_underwt}{whether a child's weight for age shows extreme underweight, this is the case if the weight is 3 standard deviations or more below the z score of a reference value of the world health organiation, logical, TRUE if severe underweight, FALSE otherwise}
+#'   \item{nt_ch_ovwt_age}{whether a child's weight for age shows overweight, this is the case if the weight is 2 standard deviations or more above the referecne z-score given by the world health organisation, logical, TRUE if overweight, FALSE otherwise}
+#'   \item{nt_ch_waz}{weight for age z-score of a child, num}
+#' }
+#' @source \url{https://dhsprogram.com/data/Download-Model-Datasets.cfm}
+"children_nutrition_data"

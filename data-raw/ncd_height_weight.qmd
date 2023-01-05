@@ -1,0 +1,11 @@
+---
+title: "NCD_height_weight"
+author: "Martin Summer"
+format: html
+editor: visual
+---
+
+```{r}
+ncd_height <- read.csv("~/R/Statistics_JWL/data/height_weight/NCD_RisC_Lancet_2020_height_child_adolescent_country.csv", stringsAsFactors = F)
+ncd_weight <- read.csv("~/R/Statistics_JWL/data/height_weight/NCD_RisC_Lancet_2020_BMI_child_adolescent_country.csv", stringsAsFactors = F)
+```

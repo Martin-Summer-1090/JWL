@@ -1,0 +1,30 @@
+---
+title: "pisa"
+format: html
+editor: visual
+---
+
+```{r}
+#| include: false
+library("intsvy")
+library("foreign")
+```
+
+```{r}
+#|include: false
+stud2015 <- read.spss("~/Data/Pisa_2015/CY6_MS_CMB_STU_QQQ.sav", use.value.labels = TRUE, to.data.frame = TRUE)
+```
+
+```{r}
+stud_2015 <- pisa.select.merge("~/Data/Pisa_2015/",
+                               student.file = "CY6_MS_CMB_STU_QQQ.sav",
+                               student = c("CNTSTUID", "ST004D01T", "PV1MATH", "PV2MATH", "PV3MATH", "PV4MATH", "PV5MATH", "PV6MATH", "PV7MATH", "PV8MATH", "PV9MATH", "PV10MATH"),
+                               countries = "AUT")
+```
+
+```{r}
+stud_2015$mathscore <- mean(stud_2015$PV1MATH, stud_2015$PV2MATH, stud_2015$PV3MATH, stud_2015$PV4MATH, 
+                            stud_2015$PV5MATH, stud_2015$PV6MATH, stud_2015$PV7MATH, stud_2015$PV8MATH,
+                            stud_2015$PV9MATH, stud_2015$PV10MATH)
+```
+

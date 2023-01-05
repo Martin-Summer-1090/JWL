@@ -1,0 +1,237 @@
+---
+title: "DHS-data"
+format: html
+editor: source
+author: Martin Summer
+---
+
+We try to prepare a model data set for teaching from the DHS model datasets. These 
+datasets are available at https://dhsprogram.com/data/model-datasets.cfm. These datasets 
+have been created strictly for practice and do not represent any country's actual data. 
+Model datasets are based on the DHS 6 Questionnaire and Recode. They provide
+a realistic data model case for typical data situations which can be found in
+surveys-
+
+The data files are in STATA format. So we need the foreign package to read these data. We want to compile a dataset for our students on height and weight and thus we need the IR and MR files or perhaps the PR file (all persons in a household)
+
+```{r}
+library(foreign)
+```
+
+```{r}
+#birth_recode <- read.dta("~/R/Statistics_JWL/data/DHS/zzbr62dt/ZZBR62FL.DTA")
+#couples_recode <-   read.dta("~/R/Statistics_JWL/data/DHS/zzcr61dt/ZZCR61FL.DTA")
+#households_recode <- read.dta("~/R/Statistics_JWL/data/DHS/zzhr62dt/ZZHR62FL.DTA")
+#individual_recode <- read.dta("~/R/Statistics_JWL/data/DHS/zzir62dt/ZZIR62FL.DTA")
+#childrens_recode <- read.dta("~/R/Statistics_JWL/data/DHS/zzkr62dt/ZZKR62FL.DTA")
+#mens_recode <- read.dta("~/R/Statistics_JWL/data/DHS/zzmr61dt/ZZMR61FL.DTA")
+household_member_recode <- read.dta("~/R/Statistics_JWL/data/DHS/zzpr62dt/ZZPR62FL.DTA")
+#hiv_test_recode <- read.dta("~/R/Statistics_JWL/data/DHS/zzar61dt/ZZAR61FL.DTA")
+```
+
+This will read the data from the stata file but without the labels. To get something similar to lookfor, we could do the following.
+
+```{r}
+#var.labels.birth_recode <- attr(birth_recode, "var.labels")
+#data.key.birth_recode <- data.frame(var.name = names(birth_recode), var.labels.birth_recode)
+
+#var.labels.couples_recode <- attr(couples_recode, "var.labels")
+#data.key.couples_recode <- data.frame(var.name = names(couples_recode), var.labels.couples_recode)
+
+#var.labels.households_recode <- attr(households_recode, "var.labels")
+#data.key.households_recode <- data.frame(var.name = names(households_recode), var.labels.households_recode)
+
+#var.labels.individual_recode <- attr(individual_recode, "var.labels")
+#data.key.individual_recode <- data.frame(var.name = names(individual_recode), var.labels.individual_recode)
+
+#var.labels.childrens_recode <- attr(childrens_recode, "var.labels")
+#data.key.childrens_recode <- data.frame(var.name = names(childrens_recode), var.labels.childrens_recode)
+
+var.labels.household_member_recode <- attr(household_member_recode, "var.labels")
+data.key.household_member_recode <- data.frame(var.name = names(household_member_recode), var.labels.household_member_recode)
+
+#var.labels.hiv_test_recode <- attr(hiv_test_recode, "var.labels")
+#data.key.hiv_test_recode <- data.frame(var.name = names(hiv_test_recode), var.labels.hiv_test_recode)
+```
+
+Now, relying on the github code 
+repository code (https://github.com/DHSProgram/DHS-Indicators-R/blob/main/Chap11_NT/NT_CH_NUT.R)
+we try to reconstruct table 11.1. from the model dataset.
+
+We would like to compute:
+
+nt_ch_sev_stunt		"Severely stunted child under 5 years"
+nt_ch_stunt			  "Stunted child under 5 years"
+nt_ch_mean_haz		"Mean z-score for height-for-age for children under 5 years"
+nt_ch_sev_wast		"Severely wasted child under 5 years"
+nt_ch_wast			  "Wasted child under 5 years"
+nt_ch_ovwt_ht		  "Overweight for heigt child under 5 years"
+nt_ch_mean_whz		"Mean z-score for weight-for-height for children under 5 years"
+nt_ch_sev_underwt	"Severely underweight child under 5 years"
+nt_ch_underwt		  "Underweight child under 5 years"
+nt_ch_ovwt_age		"Overweight for age child under 5 years"
+nt_ch_mean_waz		"Mean weight-for-age for children under 5 years"
+
+The data file for the computations will be the household member recode file, where 
+the unit of observation is one household member.
+
+```{r}
+PR_data <- household_member_recode
+PR_data$wt <- PR_data$hv005/10^6 # this adds the household weight for each observation.
+```
+
+
+```{r}
+PR_data$age_in_months <- ifelse(PR_data$hc1 < 6, {"< 6"},
+                          ifelse(PR_data$hc1 %in% c(6,7,8), {"6 - 8"},
+                           ifelse(PR_data$hc1 %in% c(9,10,11), {"9 - 11"},
+                            ifelse((PR_data$hc1 >= 12 & PR_data$hc1 <= 17), {"12 - 17"},
+                             ifelse((PR_data$hc1 >= 18 & PR_data$hc1 <= 23), {"18 - 23"}, 
+                              ifelse((PR_data$hc1 >= 24 & PR_data$hc1 <= 35), {"24 - 35"}, 
+                               ifelse((PR_data$hc1 >= 36 & PR_data$hc1 <= 48),{" 36 - 48"}, {"48 - 59"}
+                             )
+                              )
+                               )
+                                )
+                                 )
+                                  )
+                                   )
+
+```
+
+```{r}
+PR_data$sex <-  PR_data$hc27
+PR_data$type_of_residence <-  PR_data$hv025
+PR_data$region <- PR_data$hv024
+PR_data$wealth_index <- PR_data$hv270
+```
+
+In addition we need to compute the following variables:
+
+nt_ch_sev_stunt		"Severely stunted child under 5 years"
+nt_ch_stunt			  "Stunted child under 5 years"
+nt_ch_mean_haz		"Mean z-score for height-for-age for children under 5 years"
+nt_ch_sev_wast		"Severely wasted child under 5 years"
+nt_ch_wast			  "Wasted child under 5 years"
+nt_ch_ovwt_ht		  "Overweight for heigt child under 5 years"
+nt_ch_mean_whz		"Mean z-score for weight-for-height for children under 5 years"
+nt_ch_sev_underwt	"Severely underweight child under 5 years"
+nt_ch_underwt		  "Underweight child under 5 years"
+nt_ch_ovwt_age		"Overweight for age child under 5 years"
+nt_ch_mean_waz		"Mean weight-for-age for children under 5 years"
+
+```{r}
+
+# nt_ch_sev_stunt		"Severely stunted child under 5 years"
+
+PR_data$nt_ch_sev_stunt <- ifelse(PR_data$hc70 >= 9996, NA, PR_data$hc70) 
+PR_data$nt_ch_sev_stunt <- (PR_data$hv103=="yes" &  PR_data$hc70 < -300)
+```
+
+```{r}
+# nt_ch_stunt			  "Stunted child under 5 years"
+
+PR_data$nt_ch_stunt <- ifelse(PR_data$hc70 >= 9996, NA, PR_data$hc70) 
+PR_data$nt_ch_stunt <- (PR_data$hv103=="yes" &  PR_data$hc70 < -200)
+
+```
+
+```{r}
+# nt_ch_haz		"Mean z-score for height-for-age for children under 5 years"
+
+
+PR_data$nt_ch_haz <- ifelse((PR_data$hv103 == "yes" & PR_data$hc70 < 996), PR_data$hc70/100, NA)
+
+#PR_data$nt_ch_mean_haz <- matrixStats::weightedMean(PR_data$haz, PR_data$wt, idxs = NULL, na.rm = TRUE) 
+```
+
+```{r}
+# nt_ch_sev_wast		"Severely wasted child under 5 years"
+
+PR_data$nt_ch_sev_wast <- ifelse(PR_data$hc72 >= 9996, NA, PR_data$hc72) 
+PR_data$nt_ch_sev_wast <- (PR_data$hv103=="yes" &  PR_data$hc72 < -300)
+
+```
+
+```{r}
+# nt_ch_wast			  "Wasted child under 5 years"
+
+PR_data$nt_ch_wast <- ifelse(PR_data$hc72 >= 9996, NA, PR_data$hc72) 
+PR_data$nt_ch_wast <- (PR_data$hv103=="yes" &  PR_data$hc72 < -200)
+```
+
+```{r}
+# nt_ch_ovwt_ht		  "Overweight for heigt child under 5 years"
+
+PR_data$nt_ch_ovwt_ht <- ifelse(PR_data$hc72 >= 9996, NA, PR_data$hc72)
+PR_data$nt_ch_ovwt_ht <- (PR_data$hv103=="yes" &  PR_data$hc72> 200 & PR_data$hc72<9996)
+```
+
+```{r}
+# nt_ch_whz		"Mean z-score for weight-for-height for children under 5 years"
+
+PR_data$nt_ch_whz <- ifelse((PR_data$hv103 == "yes" & PR_data$hc72 < 996), PR_data$hc72/100, NA)
+
+#PR_data$nt_ch_mean_whz <- matrixStats::weightedMean(PR_data$whz, PR_data$wt, idxs = NULL, na.rm = TRUE) 
+```
+
+```{r}
+# nt_ch_sev_underwt	"Severely underweight child under 5 years"
+
+PR_data$nt_ch_sev_underwt <- ifelse(PR_data$hc71 >= 9996, NA, PR_data$hc71)
+PR_data$nt_ch_sev_underwt <- (PR_data$hv103=="yes" &  PR_data$hc71 > - 300)
+
+
+```
+
+```{r}
+# nt_ch_underwt		  "Underweight child under 5 years"
+
+PR_data$nt_ch_underwt <- ifelse(PR_data$hc71 >= 9996, NA, PR_data$hc71)
+PR_data$nt_ch_underwt <- (PR_data$hv103=="yes" &  PR_data$hc71 < - 200)
+```
+
+```{r}
+# nt_ch_ovwt_age		"Overweight for age child under 5 years"
+
+PR_data$nt_ch_ovwt_age <- ifelse(PR_data$hc71>=9996, NA, PR_data$hc71)
+PR_data$nt_ch_ovwt_age <- (PR_data$hv103 == "yes" & PR_data$hc71 > 200 & PR_data$hc71 < 9996)
+
+```
+
+```{r}
+# nt_ch_waz		"Mean weight-for-age for children under 5 years"
+
+PR_data$nt_ch_waz <- ifelse((PR_data$hv103 == "yes" & PR_data$hc71 < 996), PR_data$hc71/100, NA)
+
+#PR_data$nt_ch_mean_waz <- matrixStats::weightedMean(PR_data$waz, PR_data$wt, idxs = NULL, na.rm = TRUE) 
+
+```
+
+Now we assemble the dataframe based on which we can produce our table.
+
+```{r}
+children_nutrition_data <- data.frame(wt = PR_data$wt,
+                             age_in_months = as.factor(PR_data$age_in_months),
+                             sex = PR_data$sex,
+                             type_of_residence = PR_data$type_of_residence,
+                             region = PR_data$region,
+                             wealth_index = PR_data$wealth_index,
+                             nt_ch_sev_stunt = PR_data$nt_ch_sev_stunt,
+                             nt_ch_stunt = PR_data$nt_ch_stunt,
+                             nt_ch_haz = PR_data$nt_ch_haz,
+                             nt_ch_sev_wast = PR_data$nt_ch_sev_wast,
+                             nt_ch_wast = PR_data$nt_ch_wast,
+                             nt_ch_ovwt_ht = PR_data$nt_ch_ovwt_ht,
+                             nt_ch_whz	= PR_data$nt_ch_whz,
+                             nt_ch_sev_underwt = PR_data$nt_ch_sev_underwt,
+                             nt_ch_underwt = PR_data$nt_ch_underwt,
+                             nt_ch_ovwt_age = PR_data$nt_ch_ovwt_age,
+                             nt_ch_waz = PR_data$nt_ch_waz) |> na.omit()
+```
+
+
+
+
+
+

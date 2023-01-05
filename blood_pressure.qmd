@@ -1,0 +1,11 @@
+---
+title: "Blood_pressure"
+author: "Martin Summer"
+format: html
+editor: visual
+---
+
+```{r}
+pressure <- read.csv("~/R/Statistics_JWL/data/blood_pressure/NCD_RisC_Lancet_2016_BP_age_standardised_world.csv", stringsAsFactors = F)
+```
+
