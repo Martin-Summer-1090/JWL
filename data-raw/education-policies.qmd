@@ -1,0 +1,79 @@
+---
+title: "Some datasets on education"
+author: "Martin Summer"
+format: html
+editor: visual
+---
+
+## Education Outcomes and Expenditures
+
+This is a dataset retrieved from our world in data at https://ourworldindata.org/grapher/attendance-vs-enrollment-rates-primary-education?xScale=linear&yScale=linear
+
+We read the data from the raw data folder in our project folder for the lecture notes first.
+
+```{r}
+expenditure_outcome <- read.csv("~/R/Statistics_JWL/data/learning_outcomes_and_expenditure/average-learning-outcomes-by-total-education-expenditure-per-capita.csv")
+```
+
+We rename some variables. In particular we rename "Average.harmonised.learning.outcome.score.in.2005.2015..Altinok..Angrist..and.Patrinos..2018.." to "Outcome" and we rename "Public.and.private.per.capita.expenditure.on.education..PPP..constant.2011.international..." to "Expenditure" as well as "Population..historical.estimates." to "Pop"
+
+```{r}
+names(expenditure_outcome) <- c("Entity", "Code", "Year", "Outcome", "Expenditure", "Population")
+```
+
+The dataset is bigger as needed. We filter all observations where we actually have Outcome and Expenditure data.
+
+```{r}
+expenditure_outcome_filtered <- with(expenditure_outcome, expenditure_outcome[!is.na(Expenditure) & !is.na(Outcome), ])
+```
+
+From these data we actually only need the variables for country (since the filtered data do not contain continents or bigger political entities anymore), the Code as well as Outcome and Expenditure.
+
+```{r}
+expenditure_outcome_dat <- expenditure_outcome_filtered[, c("Entity", "Code", "Outcome", "Expenditure")]
+names(expenditure_outcome_dat) <- c("Country", "Code", "Outcome", "Expenditure")
+```
+
+```{r}
+plot(expenditure_outcome_dat$Expenditure, 
+     expenditure_outcome_dat$Outcome, 
+     main = ("Average learning outcomes by total education expenditure per capita"), 
+     xlab = ("Public and private per capita expenditure on education (PPP, constant 2011-intl $)"), 
+     ylab = ("Average harmonized learning outcome in 2005 - 2015"), pch = 16)
+
+axis(1, at = seq(500, 3500, by = 500))
+```
+
+## Enrolment versus attendance
+
+Read the data from the raw data file in the data folder of the course directory.
+
+```{r}
+enrol_attend <- read.csv("~/R/Statistics_JWL/data/learning_outcomes_and_expenditure/attendance-vs-enrollment-rates-primary-education.csv")
+```
+
+We rename some variables. "DHS..Net.attendance.rate..Primary" is renamed to "Attendance", "Net.enrolment.rate..primary..both.sexes...." is renamed to "Enrolment", "Population..historical.estimates." is renamed to "Population".
+
+```{r}
+names(enrol_attend) <- c("Entity", "Code", "Year", "Attendance", "Enrolment", "Population", "Continent")
+```
+
+Now we filter all the data where we actually have attendance and enrolment data.
+
+```{r}
+enrol_attend_filtered <- with(enrol_attend, enrol_attend[!is.na(Attendance) & !is.na(Enrolment), ])
+```
+
+We do now not need the continent variable any more and we can also rename "Entity" to "Country".
+
+```{r}
+enrol_attend_dat <- enrol_attend_filtered[,1:6]
+names(enrol_attend_dat) <- c("Country", "Code", "Year", "Attendance", "Enrolment", "Population")
+```
+
+```{r}
+plot(enrol_attend_dat$Enrolment, enrol_attend_dat$Attendance, 
+     main = ("Enrollment versus Attendance"), xlab = ("Enrollment rate primary school"), ylab = ("Attendance rate primary school"), pch = 16)
+
+abline(1,1, col = "blue")
+```

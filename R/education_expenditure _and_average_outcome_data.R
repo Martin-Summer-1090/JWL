@@ -1,0 +1,36 @@
+#' Average learning outcomes by total education expenditure per capita
+#'
+#' Average learning outcomes from standardized,
+#' psychometrically-robust international and regional
+#' achievement tests. In order to maximize
+#' coverage by country, tests have been
+#' harmonized and pooled across
+#' subjects (math, reading, science) and
+#' levels (primary and secondary education).
+#'
+#' This dataset covers countries over 2005–2015.
+#' The globally comparable achievement outcomes were
+#' constructed by linking standardized,
+#' psychometrically-robust international and
+#' regional achievement tests, including:
+#' TIMSS, PIRLS, PISA, FIMS, FISS, SIMS,
+#' SISS, SRC, RLS, MLA, IAEP, SACMEQ, PASEC, and LLECE.
+#'
+#' Expenditure data are from UNESCO household surveys.
+#' This dataset used the UNESCO data on household and
+#' government expenditure on education as a share of GDP,
+#' added the shares together and multiplied it with
+#' GDP per capita (PPP in constant 2011 international $
+#' as provided by the World Bank).
+#'
+#' @format A data frame with 55 rows and 4 variables:
+#' \describe{
+#'   \item{Country}{Country name or name of an aggregate region, chr}
+#'   \item{Code}{ISO3 code of country, chr}
+#'   \item{Outcome}{Harmonized and Pooled Test Scores, num}
+#'   \item{Expenditure}{Per capita expenditure on education
+#'         PPP constant 2011 international $, num}
+#' }
+#' @source \url{http://documents.worldbank.org/curated/en/706141516721172989/Global-data-set-on-education-quality-1965-2015} and
+#'         \url{https://ourworldindata.org/financing-education}
+"expenditure_outcome_dat"

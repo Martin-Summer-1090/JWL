@@ -1,0 +1,26 @@
+---
+title: "Learning outcomes by expenditure"
+author: "martin summer"
+format: html
+editor: visual
+---
+
+## The data
+
+We use a dataset from our world in data for illustrative purposes.
+
+```{r}
+learning_outcomes <- 
+  read.csv("~/R/Statistics_JWL/data/learning_outcomes_and_expenditure/average-learning-outcomes-by-total-education-expenditure-per-capita.csv")
+```
+
+We select the years from 2005 - 2015
+
+```{r}
+data_outcomes <- learning_outcomes[learning_outcomes$Year >= 2005 & learning_outcomes$Year <= 2015, ]
+
+names(data_outcomes) <- c("Entity", "Code", "Year", "Score", "Exp", "Pop", "Cont")
+
+
+```
+
