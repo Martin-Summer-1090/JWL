@@ -1,0 +1,14 @@
+---
+title: "Life expectancy and GDP"
+author: "Martin Summer"
+editor: visual
+---
+
+We use a dataset from our world in data reporting gdp per capita in 2011 internatinal dollars and life expectancy for countries and regions in the world for different years.
+
+```{r}
+life_expectancy <- read.csv("~/R/Statistics_JWL/data/life_expectancy_and_gdp/life-expectancy-vs-gdp-per-capita.csv")
+
+life_expectancy <- life_expectancy[, 1:5] |> na.omit()
+names(life_expectancy) <- c("Entity", "Code", "Year", "LE", "GDPC") 
+```
