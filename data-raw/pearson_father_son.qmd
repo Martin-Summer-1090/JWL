@@ -1,0 +1,15 @@
+---
+title: "Pearson 1903 height of fathers and sons"
+author: "Martin Summer"
+format: html
+editor: visual
+---
+
+We load the pearson father and son data from https://www.randomservices.org/random/data/Pearson.html.
+We have downloaded the tsv file in our project directory and load from there
+
+```{r}
+library(readr)
+pearson <- read_tsv("~/R/Statistics_JWL/data/pearson_fathers_sons_1903/Pearson.tsv")
+```
+
