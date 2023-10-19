@@ -1,0 +1,16 @@
+---
+title: "Child mortality vs. average years of schooling for women"
+format: html
+editor: visual
+---
+
+```{r}
+child_mortality_average_schooling_of_women <- 
+  read.csv("~/R/Statistics_JWL/data/infant_mortality/correlation-between-child-mortality-and-mean-years-of-schooling-for-those-aged-15-and-older.csv")
+
+names(child_mortality_average_schooling_of_women) <- 
+  c("Entity", "Code", "Year", "MR", "YEW15", "POP")
+
+child_mortality_average_schooling_of_women <- na.omit(child_mortality_average_schooling_of_women)[ ,1:6]
+```
+
