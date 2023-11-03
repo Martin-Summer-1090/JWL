@@ -1,0 +1,12 @@
+---
+title: "co2 emissions versus gdp"
+format: html
+editor: visual
+---
+
+```{r}
+emissions <- read.csv("~/R/Statistics_JWL/data/emissions/co2-emissions-vs-gdp.csv", stringsAsFactors = F)[,1:5] |> na.omit()
+
+names(emissions) <- c("Entity", "Code", "Year", "CO2pc", "GDPpc") 
+```
+
