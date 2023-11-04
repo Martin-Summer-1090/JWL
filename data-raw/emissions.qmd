@@ -9,4 +9,3 @@ emissions <- read.csv("~/R/Statistics_JWL/data/emissions/co2-emissions-vs-gdp.cs
 
 names(emissions) <- c("Entity", "Code", "Year", "CO2pc", "GDPpc") 
 ```
-

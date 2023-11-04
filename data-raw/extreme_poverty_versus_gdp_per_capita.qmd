@@ -1,0 +1,12 @@
+---
+title: "extreme poverty versus gdp per capita"
+format: html
+editor: visual
+---
+
+```{r}
+poverty_vs_gdp <- read.csv("~/R/Statistics_JWL/data/extreme_poverty/the-share-of-people-living-in-extreme-poverty-vs-gdp-per-capita.csv", stringsAsFactors = F)[,1:5] |> na.omit()
+
+names(poverty_vs_gdp) <- c("Entity", "Code", "Year", "Share", "GDPpc")
+```
+
