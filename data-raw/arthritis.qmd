@@ -1,0 +1,26 @@
+---
+title: "arthritis"
+author: "martin summer"
+format: html
+editor: visual
+---
+
+In chapter 5 we read and analyze data from a clinical trial. The onjective is to
+teach the use of tapply for producing and analyzing tables from  these data.
+In order to do so we use an example data from an article in the The R Journal Vol. 11/01, June 2019
+by Armin Ströbl "atable: Create Tables for Clinical Trial Reports". This is just a 
+real life dataset to play with in our context. We include it into our data collection
+for the course.
+
+```{r}
+library(multgee)
+data(arthritis)
+# All columns of arthritis are numeric. Set more appropriate classes:
+arthritis = within(arthritis, {
+score = ordered(y)
+baselinescore = ordered(baseline)
+time = paste0("Month ", time)
+sex = factor(sex, levels = c(1,2), labels = c("female", "male"))
+trt = factor(trt, levels = c(1,2), labels = c("placebo", "drug"))})
+```
+
