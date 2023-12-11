@@ -1,0 +1,30 @@
+---
+title: "weather and revenues"
+author: "ms"
+format: html
+editor: visual
+---
+
+These are data from https://www.modernstatisticswithr.com/ about daily weather and revenues of
+a business.
+
+```{r}
+# read data
+
+rev_data <- read.csv("~/R/Statistics_JWL/data/weather_and_sales/sales-rev.csv", sep = ";")
+weather_data <- read.csv("~/R/Statistics_JWL/data/weather_and_sales/sales-weather.csv", sep = ";")
+```
+
+```{r}
+library(data.table)
+library(dplyr)
+
+rev_data <- as.data.table(rev_data)
+weather_data <- as.data.table(weather_data)
+```
+
+```{r}
+rev_weather_data <- merge(rev_data, weather_data,
+      by = "DATE")
+```
+
