@@ -1,0 +1,18 @@
+---
+title: "Advertising channels and sales"
+author: "ms"
+format: html
+editor: source
+---
+
+This is an example dataset from the literature on in statistical learning. It is analyzed 
+in an excellent book called Introduction to Statistical Learning by James, Witten, Hastie, and Tibshirani.
+The dataset consists of 200 samples with four variables: Advertising budgets 
+for newspaper, TV, and radio (the predictors) Sales (the outcome)
+
+```{r}
+advertising <- read.csv("~/R/Statistics_JWL/data/advertising/Advertising.csv")
+names(advertising) <- c("ID", "TV", "radio", "newspaper", "sales")
+
+```
+
