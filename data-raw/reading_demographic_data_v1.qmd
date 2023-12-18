@@ -1,0 +1,240 @@
+---
+title: "Getting Demographic Data"
+author: "Martin Summer"
+format: html
+editor: source
+---
+
+## Reading the IDB data
+
+We would like to get a global demographic dataset using the data from the idbr 
+database in the US. We try to work with the idbr package provided by walker, which
+reads the IDB census data, a data collection from the US census bureau: https://github.com/walkerke/idbr
+The API key is 8b046bdcea1cc2ba58889846bf066ffc73c70ebe
+
+This package does not seem to work or the communication with the API is difficult.
+So we will not execute the following code.
+
+```{r}
+# library(devtools)
+# install_github('walkerke/idbr')
+# 
+# library(idbr)
+# idb_api_key('8b046bdcea1cc2ba58889846bf066ffc73c70ebe')
+```
+
+We could instead of using the API download the dataset and read it with readr
+
+```{r}
+library(readr)
+```
+
+This reads the 5 years datafile from the IDB
+
+```{r}
+dat <- read_delim("~/R/Statistics_JWL/data/people_count/idb5yr.txt", delim = "|")
+```
+
+```{r}
+# It looks like the last two characters in GEO_ID are country codes. Let's try this and see where we
+# get
+
+# write function to extract the last two characters from a string
+
+substrRight <- function(x, n){
+  substr(x, nchar(x)-n+1, nchar(x))
+}
+
+# extract the last two characters from GEO_ID
+
+dat$GEO_ID <- substrRight(dat$GEO_ID,2)
+```
+
+
+```{r}
+# read ISO codes
+
+iso <- read_csv("~/R/Statistics_JWL/data/people_count/ISO-alpha2.csv", show_col_types = F)
+names(iso) <- c("GEO_ID", "Name")
+```
+
+```{r}
+# read variable labels
+
+my_labels <- read_csv("~/R/Statistics_JWL/data/people_count/labels.csv", show_col_types = FALSE)
+
+```
+
+```{r}
+# See what is in dat$GEO_ID
+
+iso_dat <- as.data.frame(unique(dat$GEO_ID))
+names(iso_dat) <- c("GEO_ID")
+```
+
+Compare the codes and countries:
+
+```{r}
+test <- merge(iso_dat, iso, by = "GEO_ID", all = TRUE)
+missing <- test[is.na(test$Name), ]
+```
+
+```{r}
+test[160, 2] <- "Namibia"
+test[245, 2] <- "Gazastrip"
+test[246, 2] <- "Kosovo"
+test[247, 2] <- "Westbank"
+```
+
+```{r}
+all_countries <- test[1:(nrow(test)-1), ]
+```
+
+```{r}
+# match iso and countries and then bring name column to the front as the first
+# column
+
+data <- merge(dat, all_countries, by = "GEO_ID", all.x = T)
+data_final <- data[,c(ncol(data),1:(ncol(data)-1))]
+```
+
+
+```{r}
+names(data_final) <- c("Country", "ISO2", "Year", "Area_km2", names(data_final)[5:length(data_final)])
+```
+
+## Tidying
+
+The data have no tidy format which makes it awkward to work with them on the 
+computer. We split up the data set into non stratified data, data stratified by sex, data 
+stratified by age, data stratified by sex and age
+
+```{r}
+library(tidyverse)
+```
+
+```{r}
+names(data_final)
+```
+### Split up into blocks
+
+```{r}
+# Split up data:
+
+# population numbers:
+
+population_numbers <- bind_cols(data_final[,1:3], data_final[ , str_detect(names(data_final),"^[MF].*(_[0-9]+|_[0-9]+_)$") & !(names(data_final) %in% c("FMR0_4", "FMR1_4", "MMR0_4", "MMR1_4", "MR1_4", "MR0_4"))])
+
+# infant and children mortality data
+
+child_mortality <- bind_cols(data_final[,1:3], data_final[ , names(data_final) %in% c("FMR0_4", "FMR1_4", "MMR0_4", "MMR1_4")])
+
+infant_mortality <- bind_cols(data_final[,1:3], data_final[ , names(data_final) %in% c("IMR_F", "IMR_M")])
+
+# Birth and Death
+
+birth_and_death <- bind_cols(data_final[,1:3], data_final[ , str_detect(names(data_final),"\\b(?:BIRTHS|DEATHS)\\b")])
+
+# Birth to mothers of age
+
+birth_to_mothers_of_age <- bind_cols(data_final[,1:3], data_final[ , str_detect(names(data_final),"BIRTHS\\d{1,2}_\\d{1,2}")])
+
+# Age specific fertility rate
+
+age_specific_fertility <- bind_cols(data_final[,1:3], data_final[ , str_detect(names(data_final),".*ASFR.*")])
+
+# general demographic variables
+
+dem_names <- data_final[ , str_detect(names(data_final),"^[^0-9]*([0-9])?[^0-9]*$")]
+dem_names <- dem_names[, str_detect(names(dem_names), "^(?!.*(_M|_F)).*$")]                    
+dem_names <- dem_names[, str_detect(names(dem_names), "^(?!FPOP|MPOP|POP_DENS).*$")]
+
+```
+
+
+
+#### Population data
+
+```{r}
+population_statistics <- population_numbers %>% 
+  pivot_longer(
+    cols = !c("Country", "ISO2", "Year"),
+    names_to = c("Sex", "Variable", "Age"),
+    names_pattern = "([MF])([^MF\\d_]+)(\\d{1,2}_\\d{1,2})",
+    values_to = "Value"
+  ) %>% 
+pivot_wider(
+  names_from = Variable,
+  values_from = Value
+)
+```
+
+#### Child and infant mortality data
+
+```{r}
+
+child_mortality_statistics <- child_mortality %>% 
+  pivot_longer(
+   cols = !c("Country", "ISO2", "Year"),
+   names_to = c("Sex", "Variable", "Age"),
+   names_pattern = "^([FM])(MR)([01]_4)$",
+   values_to = "Value"
+  ) %>% 
+pivot_wider(
+  names_from = Variable,
+  values_from = Value
+)
+```
+
+```{r}
+infant_mortality_statistics <- infant_mortality %>% 
+  pivot_longer(
+   cols = !c("Country", "ISO2", "Year"),
+   names_to = c("Variable", "Sex"),
+   names_pattern = "^(IMR)_(F|M)$",
+   values_to = "Value"
+  )%>% 
+pivot_wider(
+  names_from = Variable,
+  values_from = Value
+)
+```
+
+#### Birth and Death
+
+```{r}
+birth_and_deaths_statistics <-birth_and_death 
+  
+```
+
+#### Age specific fertility
+
+```{r}
+age_specific_fertility_statistics <- age_specific_fertility %>% 
+  pivot_longer(
+    cols = !c("Country", "ISO2", "Year"),
+   names_to = c("Variable", "Age"),
+   names_pattern = "^(ASFR)(\\d{2}_\\d{2})$",
+   values_to = "Value"
+  )%>% 
+pivot_wider(
+  names_from = Variable,
+  values_from = Value
+)
+    
+  
+```
+
+#### General demographics
+
+```{r}
+general_demographics <- dem_names
+```
+
+### Clean up strings
+
+### Define correct types or classes for variables
+
+### Label variables
+
+### Package data
