@@ -32,7 +32,7 @@ library(readr)
 This reads the 5 years datafile from the IDB
 
 ```{r}
-dat <- read_delim("~/R/Statistics_JWL/data/people_count/idb5yr.txt", delim = "|", show_col_types = F)
+dat <- read_delim("~/R/Statistics_JWL/data/people_count/idb5yr.txt", delim = "|")
 ```
 
 ```{r}
@@ -103,306 +103,292 @@ data_final <- data[,c(ncol(data),1:(ncol(data)-1))]
 names(data_final) <- c("Country", "ISO2", "Year", "Area_km2", names(data_final)[5:length(data_final)])
 ```
 
-```{r}
-col_order <- names(data_final)[order(nchar(names(data_final)), names(data_final))]
-col_order_comp <- col_order[! col_order %in% c("Country", "ISO2", "Year", "Area_km2")]
-```
+## Tidying
 
-```{r}
-col_order <- c("Country", "ISO2", "Year", "Area_km2", col_order_comp)
-```
-
-```{r}
-data_ordered <- data_final[,col_order]
-```
+The data have no tidy format which makes it awkward to work with them on the 
+computer. We split up the data set into non stratified data, data stratified by sex, data 
+stratified by age, data stratified by sex and age
 
 ```{r}
 library(tidyverse)
 ```
 
 ```{r}
-data_dem <- as_tibble(data_ordered)
-names(data_dem)
+names(data_final)
 ```
+### Split up into blocks
 
 ```{r}
-names(data_dem) <-c("Country","ISO2","Year","Area_km2","E0","GR","CBR",       
-                    "CDR", "GRR", "IMR", "NIM", "NMR", "POP", "RNI",        
-                    "SRB", "TFR", "F-E0", "M-E0", "F-POP", "M-POP", "DEPND",      
-                    "F-IMR", "M-IMR", "MR_0-4", "MR_1-4", "BIRTHS", "DEATHS", "F-MR_0-4",      
-                    "F-MR_1-4", "MEDAGE", "M-MR_0-4", "M-MR_1-4", "POP_0-4", "POP_5-9", "F-POP_0-4",    
-                    "F-POP_5-9", "M-POP_0-4", "M-POP_5-9", "NATINCR", "POP_100-105", 
-                    "DEPND_65-105", "F-POP_100-105",    
-                    "F-MEDAGE", "M-MEDAGE", "M-POP_100-105", "POP_DENS", "POP_10-14", 
-                    "POP_15-19", "POP_20-24",   
-                    "POP_25-29", "POP_30-34", "POP_35-39", "POP_40-44", "POP_45-49", "POP_50-54", "POP_55-59",   
-                    "POP_60-64", "POP_65-69", "POP_70-74", "POP_75-79", "POP_80-84", "POP_85-89", "POP_90-94",   
-                    "POP_95-99", "SEXRATIO", "F-ASFR_15-19", "F-ASFR_20-24", 
-                    "F-ASFR_25-29", "F-ASFR_30-34", "F-ASFR_35-39",  
-                    "F-ASFR_40-44", "F-ASFR_45-49", "DEPND_0-14", "F-POP_10-14", 
-                    "F-POP_15-19", "F-POP_20-24", "F-POP_25-29",  
-                    "F-POP_30-34","F-POP_35-39", "F-POP_40-44", "F-POP_45-49", "F-POP_50-54",  "F-POP_55-59", 
-                    "F-POP_60-64","F-POP_65-69", "F-POP_70-74", "F-POP_75-79", "F-POP_80-84", "F-POP_85-89", 
-                    "F-POP_90-94", "F-POP_95-99","M-POP_10-14", "M-POP_15-19", "M-POP_20-24",  "M-POP_25-29", 
-                    "M-POP_30-34", "M-POP_35-39", "M-POP_40-44", "M-POP_45-49", "M-POP_50-54", 
-                    "M-POP_55-59", "M-POP_60-64",
-                    "M-POP_65-69", "M-POP_70-74", "M-POP_75-79", "M-POP_80-84", "M-POP_85-89", "M-POP_90-94", 
-                    "M-POP_95-99", "BIRTHS_15-19", "BIRTHS_20-24", "BIRTHS_25-29", "BIRTHS_30-34", 
-                    "BIRTHS_35-39", "BIRTHS_40-44", "BIRTHS_45-49")
+# Split up data:
+
+# population numbers:
+
+population_numbers <- bind_cols(data_final[,1:3], data_final[ , str_detect(names(data_final),"^[MF].*(_[0-9]+|_[0-9]+_)$") & !(names(data_final) %in% c("FMR0_4", "FMR1_4", "MMR0_4", "MMR1_4", "MR1_4", "MR0_4"))])
+
+# infant and children mortality data
+
+child_mortality <- bind_cols(data_final[,1:3], data_final[ , names(data_final) %in% c("FMR0_4", "FMR1_4", "MMR0_4", "MMR1_4")])
+
+infant_mortality <- bind_cols(data_final[,1:3], data_final[ , names(data_final) %in% c("IMR_F", "IMR_M")])
+
+# Birth and Death
+
+birth_and_death <- bind_cols(data_final[,1:3], data_final[ , 
+                    str_detect(names(data_final),"\\b(?:E0_F|E0_M|MEDAGE_M|MEDAGE_F)\\b")])
+
+# Birth to mothers of age
+
+birth_to_mothers_of_age <- bind_cols(data_final[,1:3], data_final[ , str_detect(names(data_final),"BIRTHS\\d{1,2}_\\d{1,2}")])
+
+# Age specific fertility rate
+
+age_specific_fertility <- bind_cols(data_final[,1:3], data_final[ , str_detect(names(data_final),".*ASFR.*")])
+
+# general demographic variables
+
+dem_names <- data_final[ , str_detect(names(data_final),"^[^0-9]*([0-9])?[^0-9]*$")]
+dem_names <- dem_names[, str_detect(names(dem_names), "^(?!.*(_M|_F)).*$")]                    
+dem_names <- dem_names[, str_detect(names(dem_names), "^(?!FPOP|MPOP|POP_DENS).*$")]
+
 ```
 
-It seems to be a good idea to split the dataframe according to categories of variables: Variables which encode sex and age, variables which encode sex only, variables which encode age only and variables which encode neither.
+
+
+#### Population data
 
 ```{r}
-# variables which encode neither sex nor age:
-
-my_cols_category_1 <- c("Country","ISO2","Year","Area_km2","E0","GR","CBR",       
-                    "CDR", "GRR", "IMR", "NIM", "NMR", "POP", "RNI",        
-                    "SRB", "TFR","DEPND", "BIRTHS", "DEATHS", "MEDAGE", "NATINCR",
-                    "POP_DENS", "SEXRATIO")
-
-
-data_dem_1 <- data_dem[ , my_cols_category_1]
-                    
-```
-
-```{r}
-# variables which encode only age but no sex:
-
-my_cols_category_2 <- c("Country","ISO2","Year","Area_km2",
-                        "MR_0-4", "MR_1-4", "POP_0-4", "POP_5-9",
-                        "POP_100-105", "DEPND_65-105", "POP_10-14", "POP_15-19", "POP_20-24",   
-                    "POP_25-29", "POP_30-34", "POP_35-39", "POP_40-44", "POP_45-49", "POP_50-54", "POP_55-59",   
-                    "POP_60-64", "POP_65-69", "POP_70-74", "POP_75-79", "POP_80-84", "POP_85-89", "POP_90-94",   
-                    "POP_95-99", "DEPND_0-14", "BIRTHS_15-19", "BIRTHS_20-24", "BIRTHS_25-29", "BIRTHS_30-34", 
-                    "BIRTHS_35-39", "BIRTHS_40-44", "BIRTHS_45-49")
-  
-  
-  
-data_dem_2 <- data_dem[ , my_cols_category_2]
-
-data_dem_2_pivot <- data_dem_2 %>% pivot_longer(
-                                      cols = !c("Country","ISO2","Year","Area_km2"),
-                                      names_to = c("Variable", "Age"),
-                                      names_pattern = "(.*)_(.*)",
-                                      values_to = "Value"
+population_statistics <- population_numbers %>% 
+  pivot_longer(
+    cols = !c("Country", "ISO2", "Year"),
+    names_to = c("Sex", "Variable", "Age"),
+    names_pattern = "([MF])([^MF\\d_]+)(\\d{1,2}_\\d{1,2})",
+    values_to = "Value"
+  ) %>% 
+pivot_wider(
+  names_from = Variable,
+  values_from = Value
 )
+```
 
+#### Child and infant mortality data
 
-data_dem_2_pivot_wide <- data_dem_2_pivot %>% 
-  pivot_wider(
-    names_from = Variable,
-    values_from = Value
-  )
+```{r}
 
+child_mortality_statistics <- child_mortality %>% 
+  pivot_longer(
+   cols = !c("Country", "ISO2", "Year"),
+   names_to = c("Sex", "Variable", "Age"),
+   names_pattern = "^([FM])(MR)([01]_4)$",
+   values_to = "Value"
+  ) %>% 
+pivot_wider(
+  names_from = Variable,
+  values_from = Value
+)
 ```
 
 ```{r}
-# Variables that encode only sex but no age
+infant_mortality_statistics <- infant_mortality %>% 
+  pivot_longer(
+   cols = !c("Country", "ISO2", "Year"),
+   names_to = c("Variable", "Sex"),
+   names_pattern = "^(IMR)_(F|M)$",
+   values_to = "Value"
+  )%>% 
+pivot_wider(
+  names_from = Variable,
+  values_from = Value
+)
+```
 
-my_cols_category_3 <- c("Country","ISO2","Year","Area_km2",
-                        "F-E0", "M-E0", "F-POP", "M-POP",
-                        "F-IMR", "M-IMR")
+#### Birth and Death
+
+```{r}
+life_expectancy_by_sex <-birth_and_death %>% 
+  pivot_longer(
+    cols = !c("Country", "ISO2", "Year"),
+   names_to = c("Variable", "Sex"),
+   names_pattern = "^([A-Z0-9]+)_(M|F)$",
+   values_to = "Value"
+  )%>% 
+pivot_wider(
+  names_from = Variable,
+  values_from = Value
+)
   
-data_dem_3 <- data_dem[ ,my_cols_category_3]
+```
 
-data_dem_3_pivot <- data_dem_3 %>% pivot_longer(
-                                      cols = !c("Country","ISO2","Year","Area_km2"),
-                                      names_to = c("Sex", "Variable"),
-                                      names_pattern = "(.*)-(.*)",
-                                      values_to = "Value"
+#### Birth to mothers of age
+
+```{r}
+age_specific_birth_statistics <- birth_to_mothers_of_age %>% 
+   pivot_longer(
+    cols = !c("Country", "ISO2", "Year"),
+   names_to = c("Variable", "Age"),
+   names_pattern = "^(BIRTHS)(\\d{2}_\\d{2})$",
+   values_to = "Value"
+  )%>% 
+pivot_wider(
+  names_from = Variable,
+  values_from = Value
 )
-
-data_dem_3_pivot_wide <- data_dem_3_pivot %>% 
-  pivot_wider(
-    names_from = Variable,
-    values_from = Value
-  )
 ```
 
 
+#### Age specific fertility
+
 ```{r}
-# variables which encode sex and age
-
-my_cols_category_4 <- c("Country","ISO2","Year","Area_km2",
-                        "F-MR_0-4", "F-MR_1-4", "M-MR_0-4", "M-MR_1-4",
-                        "F-POP_0-4", "F-POP_5-9", "M-POP_0-4", "M-POP_5-9",
-                        "F-POP_100-105", "M-POP_100-105",
-                        "F-ASFR_15-19", "F-ASFR_20-24", 
-                    "F-ASFR_25-29", "F-ASFR_30-34", "F-ASFR_35-39",  
-                    "F-ASFR_40-44", "F-ASFR_45-49",
-                    "F-POP_10-14", 
-                    "F-POP_15-19", "F-POP_20-24", "F-POP_25-29",  
-                    "F-POP_30-34","F-POP_35-39", "F-POP_40-44", "F-POP_45-49", "F-POP_50-54",  "F-POP_55-59", 
-                    "F-POP_60-64","F-POP_65-69", "F-POP_70-74", "F-POP_75-79", "F-POP_80-84", "F-POP_85-89", 
-                    "F-POP_90-94", "F-POP_95-99","M-POP_10-14", "M-POP_15-19", "M-POP_20-24",  "M-POP_25-29", 
-                    "M-POP_30-34", "M-POP_35-39", "M-POP_40-44", "M-POP_45-49", "M-POP_50-54", 
-                    "M-POP_55-59", "M-POP_60-64",
-                    "M-POP_65-69", "M-POP_70-74", "M-POP_75-79", "M-POP_80-84", "M-POP_85-89", "M-POP_90-94", 
-                    "M-POP_95-99"
-                        
-  )
-
-data_dem_4 <- data_dem[ , my_cols_category_4]
-
-data_dem_4_pivot <- data_dem_4 %>% pivot_longer(
-                                      cols = !c("Country","ISO2","Year","Area_km2"),
-                                      names_to = c("Sex", "Variable", "Age"),
-                                      names_pattern = "(.*)-(.*)_(.*)",
-                                      values_to = "Value"
+age_specific_fertility_statistics <- age_specific_fertility %>% 
+  pivot_longer(
+    cols = !c("Country", "ISO2", "Year"),
+   names_to = c("Variable", "Age"),
+   names_pattern = "^(ASFR)(\\d{2}_\\d{2})$",
+   values_to = "Value"
+  )%>% 
+pivot_wider(
+  names_from = Variable,
+  values_from = Value
 )
-
-data_dem_4_pivot_wide <- data_dem_4_pivot %>% 
-  pivot_wider(
-    names_from = Variable,
-    values_from = Value
-  )
+    
+  
 ```
 
-Now we clean up the datasets and assign the correct types to the variables:
+#### General demographics
 
 ```{r}
-dem_dat_cat1 <- data_dem_1
-dem_dat_cat2 <- data_dem_2_pivot_wide
-dem_dat_cat3 <- data_dem_3_pivot_wide
-dem_dat_cat4 <- data_dem_4_pivot_wide
+general_demographics <- dem_names
 ```
-
-## Processing and refining
+### Clean up strings
 
 ```{r}
-dem_dat_cat1_reordered <- dem_dat_cat1[with(dem_dat_cat1, order(Country, -Year)), ]
-dem_dat_cat2_reordered <- dem_dat_cat2[with(dem_dat_cat2, order(Country, -Year)), ]
-dem_dat_cat3_reordered <- dem_dat_cat3[with(dem_dat_cat3, order(Country, -Year)), ]
-dem_dat_cat4_reordered <- dem_dat_cat4[with(dem_dat_cat4, order(Country, -Year)), ]
+
+age_specific_birth_statistics$Age <- gsub("_", "-", age_specific_birth_statistics$Age)
+
+age_specific_fertility_statistics$Age <- gsub("_", "-", age_specific_fertility_statistics$Age)
+
+child_mortality_statistics$Age <- gsub("_", "-", child_mortality_statistics$Age)
+
+population_statistics$Age <- gsub("_", "-", population_statistics$Age)
+
 ```
 
-The data consist of historical records and projections. I think they should be divided in two spearate sets
-accordingly. We start by getting ready with the cat1 data set and then apply what we do there to all the others.
+### Define correct types or classes for variables
+
+ 
 
 ```{r}
-dem_dat_cat1_reordered_historic  <- dem_dat_cat1_reordered[dem_dat_cat1_reordered$Year <= 2023, ]
-dem_dat_cat1_reordered_projected <- dem_dat_cat1_reordered[dem_dat_cat1_reordered$Year > 2023, ]
+
+my_countries <- unique(population_statistics$Country)
+population_statistics$Country <-  factor(population_statistics$Country, levels = my_countries)
+
+my_iso <- unique(population_statistics$ISO2)
+population_statistics$ISO2 <- factor(population_statistics$ISO2, levels = my_iso)
+
+my_sex <- unique(population_statistics$Sex)
+population_statistics$Sex <- factor(population_statistics$Sex, levels = my_sex)
+
+my_age <- c("0-4", "5-9", "10-14", "15-19", "20-24", "25-29", "30-34", "35-39", 
+            "40-44", "45-49", "50-54", "55-59", "60-64", "65-69", "70-74", "75-79", 
+            "80-84", "85-89", "90-94", "95-99")
+
+population_statistics$Age <- factor(population_statistics$Age, levels = my_age)
 ```
 
-Now we label the data:
+The problem is that the age column is not correctly ordered by the age factor. We correct
+this, so we have correctly ordered age classes throughout the frame
+
+```{r}
+
+# population
+
+#define number of data frames to split into
+n <- dim(population_statistics)[1]/20
+
+#split data frame into n equal-sized data frames
+aux <- split(population_statistics, factor(sort(rank(row.names(population_statistics))%%n)))
+
+corr <- function(x){ with(x, x[order(Age, ISO2), ])}
+
+res <- lapply(aux, corr)
+
+population_statistics_ordered <- do.call(bind_rows, res)
+
+population_statistics_by_age_and_sex <- population_statistics_ordered
+```
+
+### Label variables
 
 ```{r}
 library(Hmisc)
+
+var_labels_1 <- c(Country = "Country", ISO2="alpha2 country code", Year = "Year", Sex = "Sex", Age = "Age in 5 year intervals", POP = "Total midyear population")
+
+label(population_statistics_by_age_and_sex) = as.list(var_labels_1[match(names(population_statistics_by_age_and_sex), names(var_labels_1))])
 ```
 
 ```{r}
-var_labels_1 = c(Country="Name of Country", ISO2="ISO 3166 Alpha2 country code", Year = "Year of observation",
-               Area_km2 = "Country area in square kilometers", E0 = "Both sexes life expectancy at birth",
-               GR = "Population growth rate in percent", CBR = "Crude birth rate (births per 1,000 population)",
-               CDR = "Crude death rate (deaths per 1,000 population)", GRR = "Gross reproduction rate (lifetime births per woman)",
-               IMR = "Both sexes Infant mortality rate (infant deaths per 1,000 population", NIM = "Net international migrants, both sexes",
-               NMR = "Net migration rate (net number of migrants per 1,000 population", POP = "Total midyear population",
-               RNI = "Rate of natural increase (percent)", SRB = "Sex ratio at birth (males per female)", TFR = "Total fertility rate",
-               DEPND = "Dependency ratio", BIRTHS = "Number of births both sexes", DEATHS = "number of deaths both sexes",
-               MEDAGE = "Median age both sexes", NATINCR = "Natural increase", POP_DENS = "Population density, people per square km",
-               SEXRATIO = "Sex ratio at birth (males per female)")
-
-label(dem_dat_cat1_reordered_historic) = as.list(var_labels_1[match(names(dem_dat_cat1_reordered_historic), names(var_labels_1))])
-label(dem_dat_cat1_reordered_projected) = as.list(var_labels_1[match(names(dem_dat_cat1_reordered_projected), names(var_labels_1))])
-
+var_labels_2 <- c(Country = "Country", ISO2="alpha2 country code", Year = "Year", Sex = "Sex", Age = "Age in 5 year intervals", MR = "Mortality Rate, deaths per 1000")
+label(child_mortality_statistics) = as.list(var_labels_2[match(names(child_mortality_statistics), names(var_labels_2))])
 ```
-
-Now we do the category 2 data:
-
+ 
 ```{r}
-dem_dat_cat2_reordered_historic  <- dem_dat_cat2_reordered[dem_dat_cat2_reordered$Year <= 2023, ]
-dem_dat_cat2_reordered_projected <- dem_dat_cat2_reordered[dem_dat_cat2_reordered$Year > 2023, ]
-
-# The Area per square km is not needed in these datasets
-
-dem_dat_cat2_reordered_historic$Area_km2 <- NULL
-dem_dat_cat2_reordered_projected$Area_km2 <- NULL
-
+var_labels_3 <- c(Country = "Country", ISO2="alpha2 country code", Year = "Year", Sex = "Sex", 
+                  IMR = "Infant Mortality Rate, deaths per 1000")
+label(infant_mortality_statistics) = as.list(var_labels_3[match(names(infant_mortality_statistics), names(var_labels_3))])
 ```
 
 ```{r}
-var_labels_2 = c(Country="Name of Country", ISO2="ISO 3166 Alpha2 country code", Year = "Year of observation",
-                 Age = "Age buckets in years", MR = "Mortality rate both sexes (death per 1000)", POP = "Population", DEPND = "Dependency ratio", BIRTHS = "Births to mothers ")
-
-label(dem_dat_cat2_reordered_historic) =  as.list(var_labels_2[match(names(dem_dat_cat2_reordered_historic),  names(var_labels_2))])
-label(dem_dat_cat2_reordered_projected) = as.list(var_labels_2[match(names(dem_dat_cat2_reordered_projected), names(var_labels_2))])
-```
-
-Now we do the category 3 data:
-
-```{r}
-dem_dat_cat3_reordered_historic  <- dem_dat_cat3_reordered[dem_dat_cat3_reordered$Year <= 2023, ]
-dem_dat_cat3_reordered_projected <- dem_dat_cat3_reordered[dem_dat_cat3_reordered$Year > 2023, ]
-
-# The Area per square km is not needed in these datasets
-
-dem_dat_cat3_reordered_historic$Area_km2 <- NULL
-dem_dat_cat3_reordered_projected$Area_km2 <- NULL
+var_labels_4 <- c(Country = "Country", ISO2="alpha2 country code", Year = "Year", E0 = "Life Expectancy", MEDAGE = "Median age")
+label(life_expectancy_by_sex) = as.list(var_labels_4[match(names(life_expectancy_by_sex), names(var_labels_4))])
 ```
 
 ```{r}
-var_labels_3 = c(Country="Name of Country", ISO2="ISO 3166 Alpha2 country code", Year = "Year of observation",
-                 Sex = "Sex male, female", E0 = "Life expectancy at birth", POP = "Population", IMR = "Infant mortality rate (infant deaths per 1,000 population)")
-
-label(dem_dat_cat3_reordered_historic) =  as.list(var_labels_3[match(names(dem_dat_cat3_reordered_historic),  names(var_labels_3))])
-label(dem_dat_cat3_reordered_projected) = as.list(var_labels_3[match(names(dem_dat_cat3_reordered_projected), names(var_labels_3))])
-```
-
-Finally we do category 4 data:
-
-```{r}
-dem_dat_cat4_reordered_historic  <- dem_dat_cat4_reordered[dem_dat_cat4_reordered$Year <= 2023, ]
-dem_dat_cat4_reordered_projected <- dem_dat_cat4_reordered[dem_dat_cat4_reordered$Year > 2023, ]
-
-# The Area per square km is not needed in these datasets
-
-dem_dat_cat4_reordered_historic$Area_km2 <- NULL
-dem_dat_cat4_reordered_projected$Area_km2 <- NULL
+var_labels_5 <- c(Country = "Country", ISO2="alpha2 country code", Year = "Year", Age = "Age in 5 years interv", BIRTHS = "Number of births")
+label(age_specific_birth_statistics) = as.list(var_labels_5[match(names(age_specific_birth_statistics), names(var_labels_5))])
 ```
 
 ```{r}
-var_labels_4 = c(Country="Name of Country", ISO2="ISO 3166 Alpha2 country code", Year = "Year of observation",
-                 Sex = "Sex male, female", Age = "Age buckets in years", MR = "Mortality rate (deaths per 1,000 population)", 
-                 POP = "Population", ASFR = "Age specific fertility rate for women")
-
-label(dem_dat_cat4_reordered_historic) =  as.list(var_labels_4[match(names(dem_dat_cat4_reordered_historic),  names(var_labels_4))])
-label(dem_dat_cat4_reordered_projected) = as.list(var_labels_4[match(names(dem_dat_cat4_reordered_projected), names(var_labels_4))])
-```
-
-## Create the final datasets
-
-```{r}
-
-# basic demography data:
-
-dem_dat_basic_hist <- dem_dat_cat1_reordered_historic
-dem_dat_basic_proj <- dem_dat_cat1_reordered_projected
-
-# demographic data by age
-
-dem_dat_by_age_hist <- dem_dat_cat2_reordered_historic
-dem_dat_by_age_proj <- dem_dat_cat2_reordered_projected
-
-# demographic data by sex
-
-dem_dat_by_sex_hist <- dem_dat_cat3_reordered_historic
-dem_dat_by_sex_proj <- dem_dat_cat3_reordered_projected
-
-# demographic data by age and sex
-
-dem_dat_by_sex_and_age_hist <- dem_dat_cat4_reordered_historic
-dem_dat_by_sex_and_age_proj <- dem_dat_cat4_reordered_projected
+var_labels_6 <- c(Country = "Country", ISO2="alpha2 country code", Year = "Year", Age = "Age in 5 year intervals", ASFR="Age specific fertility rate")
+label(age_specific_fertility_statistics) = as.list(var_labels_5[match(names(age_specific_fertility_statistics), names(var_labels_5))])
 ```
 
 ```{r}
-usethis::use_data(dem_dat_basic_hist, overwrite = T)
-usethis::use_data(dem_dat_basic_proj, overwrite = T)
-usethis::use_data(dem_dat_by_age_hist, overwrite = T)
-usethis::use_data(dem_dat_by_age_proj, overwrite = T)
-usethis::use_data(dem_dat_by_sex_hist, overwrite = T)
-usethis::use_data(dem_dat_by_sex_proj, overwrite = T)
-usethis::use_data(dem_dat_by_sex_and_age_hist, overwrite = T)
-usethis::use_data(dem_dat_by_sex_and_age_proj, overwrite = T)
+var_labels_7 <- c(Country = "Country", 
+                  ISO2="alpha2 country code", 
+                  Year = "Year", 
+                  Area_km2 = "Area in square km", 
+                  CBR = "Crude birth rate (births per 1,000 population)",
+                  CDR = "Crude death rate (deaths per 1,000 population)",
+                  E0 = "Both sexes life expectancy at birth",
+                  GR = "Growth rate (percent)",
+                  GRR = "Gross reproduction rate (lifetime births per woman)",
+                  IMR = "Infant mortality rate",
+                  NMR = "Net migration rate",
+                  POP = "Population",
+                  RNI = "Rate of natural increase (percent)",
+                  SRB = "Sex ratio at birth (males per female)",
+                  TFR = "Total fertility rate",
+                  BIRTHS = "Number of births",
+                  DEATHS = "Number of deaths",
+                  NIM = "Net international migrants, both sexes",
+                  NATINCR = "Natural increase",
+                  MEDAGE = "Median age",
+                  SEXRATIO = "Sex ration (males to females",
+                  DEPND = "Dependency ration, both sexes"
+                  )
+label(general_demographics) = as.list(var_labels_6[match(names(general_demographics), names(var_labels_6))])
+```
+
+
+### Package data
+
+```{r}
+usethis::use_data(general_demographics)
+usethis::use_data(age_specific_fertility_statistics)
+usethis::use_data(age_specific_birth_statistics)
+usethis::use_data(population_statistics_by_age_and_sex)
+usethis::use_data(child_mortality_statistics)
+usethis::use_data(life_expectancy_by_sex)
+usethis::use_data(infant_mortality_statistics)
 ```
 
