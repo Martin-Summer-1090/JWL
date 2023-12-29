@@ -1,0 +1,78 @@
+---
+title: "Individual Census data for Kenya, US and Japan"
+author: "Martin Summer"
+editor: source
+---
+
+The IDB also contains ungrouped data. We read this file
+
+```{r}
+library(readr)
+individual_data <- read_delim("~/R/Statistics_JWL/data/people_count/idbsingleyear.txt", delim = "|")
+```
+
+```{r}
+# It looks like the last two characters in GEO_ID are country codes. Let's try this and see where we
+# get
+
+# write function to extract the last two characters from a string
+
+substrRight <- function(x, n){
+  substr(x, nchar(x)-n+1, nchar(x))
+}
+
+# extract the last two characters from GEO_ID
+
+individual_data$GEO_ID <- substrRight(individual_data$GEO_ID,2)
+```
+
+```{r}
+names(individual_data) <- c("Year", "ISO2", "Age", "Sex", "POP")
+```
+
+The data with Sex == 0 are redundant, since they jsu seem to by the sum of the population values for men and
+women. Let us drop these lines from the dataframe.
+
+```{r}
+ind_dat <- individual_data[individual_data$Sex != 0, ]
+```
+
+Let'check what encodes what:
+
+```{r}
+test <- ind_dat[ind_dat$Year == 2022 & ind_dat$ISO2 == "KN", ]
+```
+
+```{r}
+test_set1 <- test[test$Sex == 1, ]
+test_set2 <- test[test$Sex == 2, ]
+```
+
+```{r}
+test_set1$cumpop <- cumsum(test_set1$POP)
+test_set2$cumpop <- cumsum(test_set2$POP)
+```
+
+
+
+
+
+
+```{r}
+aux <- test[test$Sex == 0, ]
+```
+
+```{r}
+out <- vector("list", sum(aux$POP))
+for(i in seq_along(aux$Age)){
+  out[[i]] <- rep(aux$Age[i], aux$POP[i])
+}
+```
+
+```{r}
+counts <- unlist(out)
+```
+
+```{r}
+hist(counts)
+```

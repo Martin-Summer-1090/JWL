@@ -1,0 +1,128 @@
+---
+title: "worldpopulation"
+author: "Martin Summer"
+format: html
+editor: source
+---
+
+## Data
+
+The data are from https://github.com/awstringer1/sta238-book. We have downloaded them manually and clean them accroding to the code
+of their book.
+
+```{r}
+library(tidyverse)
+```
+
+```{r}
+remove_space <- function(x) stringr::str_remove_all(x," ")
+worldpop <- readr::read_csv(
+  file = "~/R/Statistics_JWL/data/people_count/worldpop-estimates.csv",
+  col_names = TRUE,
+  col_types = stringr::str_c(rep("c",72),collapse = "")
+) %>%
+  # Remove the space
+  mutate_at(vars(`1950`:`2020`),remove_space) %>%
+  # Convert to numeric
+  mutate_at(vars(`1950`:`2020`),as.numeric)
+glimpse(worldpop)
+```
+
+
+```{r}
+worldpop <- worldpop %>%
+  pivot_longer(
+    `1950`:`2020`,
+    names_to = "year",
+    values_to = "population"
+  ) %>%
+  mutate(year = as.numeric(year))
+glimpse(worldpop)
+```
+
+```{r}
+remove_comma <- function(x) stringr::str_remove_all(x,",")
+worldpop_pred_median <- readr::read_csv(
+  file = "~/R/Statistics_JWL/data/people_count/worldpop-pred-median.csv",
+  col_names = TRUE,
+  col_types = stringr::str_c(rep("c",18),collapse = "")
+) %>%
+  # Remove the commas. R already removed the quotes.
+  mutate_at(vars(`2020`:`2100`),remove_comma) %>%
+  # Convert to numeric
+  mutate_at(vars(`2020`:`2100`),as.numeric) %>%
+  # Pivot to long format
+  pivot_longer(
+    `2020`:`2100`,
+    names_to = "year",
+    values_to = "population"
+  ) %>%
+  mutate(year = as.numeric(year))
+glimpse(worldpop_pred_median)
+```
+
+```{r}
+remove_comma <- function(x) stringr::str_remove_all(x,",")
+worldpop_pred_lower95 <- readr::read_csv(
+  file = "~/R/Statistics_JWL/data/people_count/worldpop-pred-lower95.csv",
+  col_names = TRUE,
+  col_types = stringr::str_c(rep("c",18),collapse = "")
+) %>%
+  # Remove the commas. R already removed the quotes.
+  mutate_at(vars(`2020`:`2100`),remove_comma) %>%
+  # Convert to numeric
+  mutate_at(vars(`2020`:`2100`),as.numeric) %>%
+  # Pivot to long format
+  pivot_longer(
+    `2020`:`2100`,
+    names_to = "year",
+    values_to = "population"
+  ) %>%
+  mutate(year = as.numeric(year))
+glimpse(worldpop_pred_lower95)
+```
+
+```{r}
+remove_comma <- function(x) stringr::str_remove_all(x,",")
+worldpop_pred_upper95 <- readr::read_csv(
+  file = "~/R/Statistics_JWL/data/people_count/worldpop-pred-upper95.csv",
+  col_names = TRUE,
+  col_types = stringr::str_c(rep("c",18),collapse = "")
+) %>%
+  # Remove the commas. R already removed the quotes.
+  mutate_at(vars(`2020`:`2100`),remove_comma) %>%
+  # Convert to numeric
+  mutate_at(vars(`2020`:`2100`),as.numeric) %>%
+  # Pivot to long format
+  pivot_longer(
+    `2020`:`2100`,
+    names_to = "year",
+    values_to = "population"
+  ) %>%
+  mutate(year = as.numeric(year))
+glimpse(worldpop_pred_upper95)
+```
+
+
+```{r}
+#put all data frames into list
+worldpop_pred  <- list(worldpop_pred_median, worldpop_pred_lower95, worldpop_pred_upper95)
+
+#merge all data frames in list
+worldpop_pred_new <- worldpop_pred  %>% reduce(full_join, by=c('country','year')) %>% 
+                        rename(
+                               country = country,
+                               year = year,
+                               population = population.x,
+                               population_lower95 = population.y,
+                               population_upper95 = population
+                              )
+```
+```{r}
+glimpse(worldpop_pred_new)
+```
+```{r}
+worldpop_pred <- worldpop_pred_new
+usethis::use_data(worldpop_pred)
+```
+
