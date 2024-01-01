@@ -1,0 +1,21 @@
+---
+title: "Geysir erruption times"
+author: "Martin Summer"
+format: html
+editor: source
+---
+
+```{r}
+library(tidyverse)
+oldfaithful <- readr::read_csv(
+  file = "~/R/Statistics_JWL/data/old_faithful/oldfaithful.txt", # Tell it where the file is
+  col_names = "time", # Tell it that the first row is NOT column names, and at the same time, tell it what name you want for the column.
+  col_types = "n" # Tell it that there is one column, and it is "numeric" (n)
+)
+# Check what was read in using the dplyr::glimpse() function
+dplyr::glimpse(oldfaithful)
+```
+```{r}
+usethis::use_data(oldfaithful)
+```
+
