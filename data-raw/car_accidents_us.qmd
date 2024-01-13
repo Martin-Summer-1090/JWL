@@ -1,0 +1,436 @@
+---
+title: "Car accident statistics US 2017 - 2021"
+author: "Martin Summer"
+format: html
+editor: source
+---
+
+## Accident data
+
+We try to compile a real life accident dataset to demonstrate
+applications of the Poisson Distribution as in Spiegelhalters
+book, chapter 8 where the data are from the UK
+homicide statistics. The point of the data example is that while we have a 
+complete record of cases still it is useful to thing of the
+distribution in terms of a probability distribution,
+
+The data we are using are retrieve from the US national center for
+statistics and analysis NCSA and we are using the  data 2017 - 2021
+from the
+Fatality Analysis Reporting System (FARS).
+
+Website: https://cdan.dot.gov/
+Data: https://www.nhtsa.gov/file-downloads?p=nhtsa/downloads/FARS/
+
+```{r}
+library(tidyverse)
+library(readr)
+```
+We read the accidents and the vehicles file. The vehilces file is needed to
+record the number of deaths. The number of deaths in an 
+accident are in a different file, 
+according to the manual: The data 
+element “Fatalities in Vehicle” in the Vehicle data file
+provides the number of deaths in a vehicle.
+
+```{r}
+
+# accidents.csv for 2016 - 2021 stored in a list dat
+
+dat <- list(
+  dat_2016 = read_csv("~/Desktop/FARS/FARS2016NationalCSV/accident.CSV"), 
+  dat_2017 = read_csv("~/Desktop/FARS/FARS2017NationalCSV/accident.CSV"), 
+  dat_2018 = read_csv("~/Desktop/FARS/FARS2018NationalCSV/accident.csv"), 
+  dat_2019 = read_csv("~/Desktop/FARS/FARS2019NationalCSV/accident.CSV"), 
+  dat_2020 = read_csv("~/Desktop/FARS/FARS2020NationalCSV/accident.csv"), 
+  dat_2021 = read_csv("~/Desktop/FARS/FARS2021NationalCSV/accident.csv")
+  )
+
+# vehicles.csv from 2016 - 2021 stored in a list vedat
+
+
+vedat <- list(
+  
+  vedat_2016 = read_csv("~/Desktop/FARS/FARS2016NationalCSV/Vehicle.CSV"),
+  vedat_2017 = read_csv("~/Desktop/FARS/FARS2017NationalCSV/Vehicle.CSV"),
+  vedat_2018 = read_csv("~/Desktop/FARS/FARS2018NationalCSV/vehicle.csv"),
+  vedat_2019 = read_csv("~/Desktop/FARS/FARS2019NationalCSV/vehicle.csv"),
+  vedat_2020 = read_csv("~/Desktop/FARS/FARS2020NationalCSV/vehicle.csv"),
+  vedat_2021 = read_csv("~/Desktop/FARS/FARS2021NationalCSV/vehicle.csv")
+)
+```
+
+We select a subset of variables from these dataframes. What we need for
+our purpose are:
+
+ST_CASE: The unique case identifier for each record.
+
+STATE: This data element identifies the State in which the 
+crash occurred. The codes are
+from the General Services Administration’s (GSA) 
+publication of worldwide Geographic
+Location Codes (GLC).
+
+1 Alabama       31 Nebraska
+2 Alaska        32 Nevada
+4 Arizona       33 New Hampshire
+5 Arkansas      34 New Jersey
+6 California    35 New Mexico
+8 Colorado      36 New York
+9 Connecticut   37 North Carolina
+10 Delaware     38 North Dakota
+11 District of Columbia 39 Ohio
+12 Florid       40 Oklahoma
+13 Georgia      41 Oregon
+15 Hawaii       42 Pennsylvania
+16 Idaho        43 Puerto Rico
+17 Illinois     44 Rhode Island
+18 Indiana      45 South Carolina
+19 Iowa         46 South Dakota
+20 Kansas       47 Tennessee
+21 Kentucky     48 Texas
+22 Louisiana    49 Utah
+23 Maine        50 Vermont
+24 Maryland     52 Virgin Islands (since 2004)
+25 Massachusetts 51 Virginia
+26 Michigan     53 Washington
+27 Minnesota    54 West Virginia
+28 Mississippi  55 Wisconsin
+29 Missouri     56 Wyoming
+30 Montana
+
+MONTH: This data element records the month in which the crash 
+occurred. ( unknown: 99)
+
+DAY: This data element records the day of the month on which the crash 
+occurred (unknown: 99)
+
+DAY_WEEK: This data element records the day of the week on which the crash occurred. (unknown: 9)
+
+YEAR: This data element records the year in which the crash occurred.
+
+FATALS: This data element records the number of fatally injured people in the crash.
+
+
+
+```{r}
+
+data_accidents <- vector("list", length = 6)
+
+for( i in seq_along(1:6)){
+  
+  data_accidents[[i]] <- with(dat[[i]], dat[[i]][, c("ST_CASE", "STATE", "MONTH", 
+                          "DAY", "DAY_WEEK", "YEAR", "FATALS")])
+
+
+}
+```
+
+Now we pack the selected vdat files into a list as well
+
+```{r}
+
+data_vehicles <- vector("list", length = 6)
+
+for(i in seq_along(1:6)){
+
+   data_vehicles[[i]] <- with(vedat[[i]], vedat[[i]][,c("ST_CASE", "STATE", "DEATHS")])
+
+}
+```
+
+Now we join the number of death with the accident file using the
+case number as key
+
+```{r}
+joined_dat <- vector("list", length = 6)
+
+for(i in seq_along(1:6)){
+
+joined_dat[[i]] <- left_join(data_accidents[[i]], data_vehicles[[i]], 
+                       by = c("ST_CASE", "STATE"))
+
+}
+```
+
+Re-order columns
+
+```{r}
+
+accidents <- vector("list", length = 6)
+
+for(i in seq_along(1:6)){
+
+  accidents[[i]] <- joined_dat[[i]][ ,c("ST_CASE", "STATE", "YEAR", "MONTH", "DAY", "FATALS", "DEATHS")]
+
+}
+```
+
+Make a date column for all frames by collapsing year, month, day variables.
+
+```{r}
+# Create a data column:
+
+for(i in seq_along(1:6)){
+
+joined_dat[[i]]$DATE <- as.Date(paste(joined_dat[[i]]$YEAR, 
+                                 joined_dat[[i]]$MONTH, 
+                                 joined_dat[[i]]$DAY, sep = "-"))
+
+
+}
+```
+
+Make new dataframe by reordeing columns and removing duplicates:
+
+```{r}
+aux <- vector("list", 6)
+
+for(i in seq_along(1:6)){
+aux[[i]] <- joined_dat[[i]][ ,c("ST_CASE", "STATE", "DATE", "FATALS", "DEATHS")] 
+aux[[i]] <- aux[[i]][!duplicated(aux[[i]]), ]
+  
+
+}
+```
+
+Now we have the final dataframe ordered by date:
+
+```{r}
+accident_data <- vector("list", length = 6)
+
+for(i in seq_along(1:6)){
+
+accident_data[[i]] <- aux[[i]][order(aux[[i]]$DATE), ]
+
+}
+```
+
+```{r}
+for(i in seq_along(1:6)){
+
+accident_data[[i]]$STATE <- recode(accident_data[[i]]$STATE,
+"1" = "Alabama", 
+"31" = "Nebraska",
+"2" = "Alaska",  
+"32" = "Nevada",
+"4" = "Arizona",       
+"33" =  "New Hampshire",
+"5" = "Arkansas",
+"34" = "New Jersey",
+"6" = "California",
+"35" = "New Mexico",
+"8" = "Colorado",
+"36" = "New York",
+"9" = "Connecticut",
+"37" = "North Carolina",
+"10" = "Delaware",
+"38" = "North Dakota",
+"11" = "District of Columbia",
+"39" = "Ohio",
+"12" = "Florida",
+"40" = "Oklahoma",
+"13" = "Georgia",
+"41" = "Oregon",
+"15" = "Hawaii",
+"42" =  "Pennsylvania",
+"16" = "Idaho",
+"43" = "Puerto Rico",
+"17" = "Illinois",
+"44" = "Rhode Island",
+"18" = "Indiana",
+"45" =  "South Carolina",
+"19" = "Iowa",
+"46" = "South Dakota",
+"20" = "Kansas",
+"47" = "Tennessee",
+"21" = "Kentucky",
+"48" = "Texas",
+"22" = "Louisiana",
+"49" = "Utah",
+"23" =  "Maine",
+"50" =  "Vermont",
+"24" = "Maryland",
+"52" =  "Virgin Islands",
+"25" = "Massachusetts",
+"51" = "Virginia",
+"26" = "Michigan",
+"53" = "Washington",
+"27" = "Minnesota",
+"54" =  "West Virginia",
+"28" = "Mississippi",
+"55" =  "Wisconsin",
+"29" = "Missouri",
+"56" = "Wyoming",
+"30" = "Montana")
+}
+```
+
+The data contain only records when an accident happened. This is not the case
+every day in every state. So days with 0 accidents are missing. We correct the
+data for this by constructing dataframes with a complete list of days and then
+enter 0 in Fatals and Deaths when nothing is recorded at a single day.
+2016 and 2020 are leap years. R accounts for this automatically.
+
+```{r}
+# Generate all combinations of dates and states for all years
+
+all_dates <- vector("list", 6)
+all_states <- vector("list", 6)
+all_combinations <- vector("list", 6)
+
+for(i in seq_along(1:6)){
+
+year <- as.character(2016:2021)
+
+all_dates[[i]] <- seq(as.Date(paste(year[i], "-01-01", sep = "")), 
+                      as.Date(paste(year[i], "-12-31", sep = "")), 
+                      by = "1 day")
+
+all_states[[i]] <- unique(accident_data[[i]]$STATE)
+
+# Make a new df
+
+all_combinations[[i]] <- expand.grid(DATE = all_dates[[i]], STATE = all_states[[i]])
+
+}
+```
+
+
+```{r}
+
+merged_df <- vector("list", length = 6)
+
+for(i in seq_along(1:6)){
+
+# Merge with the original dataframe
+merged_df[[i]] <- merge(all_combinations[[i]], accident_data[[i]], by = c("DATE", "STATE"), all.x = TRUE)
+
+# Replace NA values with 0
+
+merged_df[[i]][is.na(merged_df[[i]]$FATALS), "FATALS"] <- 0
+merged_df[[i]][is.na(merged_df[[i]]$DEATHS), "DEATHS"] <- 0
+
+# If you want to sort the final dataframe by DATE and STATE
+merged_df[[i]] <- merged_df[[i]] %>% arrange(STATE, DATE)
+
+merged_df[[i]] <- merged_df[[i]][ ,
+          c("ST_CASE", "STATE", "DATE", "FATALS", "DEATHS")]
+
+}
+
+```
+
+Aggregate by state and date
+
+```{r}
+
+cdat <- vector("list", length = 6)
+
+for(i in seq_along(1:6)){
+
+cdat[[i]] <- aggregate(cbind(merged_df[[i]]$FATALS, merged_df[[i]]$DEATHS), 
+          list(merged_df[[i]]$STATE, merged_df[[i]]$DATE), sum)
+
+names(cdat[[i]]) <- c("STATE", "DATE", "FATALS", "DEATHS")
+
+}
+```
+
+Make one lonf-format dataframe from the list:
+
+```{r}
+car_accidents_us <- do.call(bind_rows, cdat) %>% as_tibble()
+```
+
+```{r}
+View(car_accidents_us)
+```
+
+## Testing the dataframe
+
+Now let's do some tests with that:
+
+```{r}
+df <- car_accidents_us
+
+test <- df[df$STATE == "Alabama", ]
+```
+
+```{r}
+hist(test$DEATHS)
+mean(test$DEATHS)
+```
+
+```{r}
+lambda <- mean(test$DEATHS)
+prob <- dpois(5, lambda )
+lambda
+prob
+```
+
+
+```{r}
+nrow(test)*prob
+```
+```{r}
+sum(test$DEATHS == 5)
+```
+
+```{r}
+
+expected <- vector("double", 15)
+
+for(i in seq_along(1:15)){
+  
+  expected[i] <- dpois(i, lambda )*nrow(test)
+  
+}
+
+outp <- c(dpois(0, lambda)*nrow(test), expected)
+
+observed <- vector("double", 15)
+
+for(i in seq_along(1:15)){
+  
+  observed[i] <- sum(test$DEATHS == i)
+}
+
+oute <- c(sum(test$DEATHS == 0), observed)
+
+df <- data.frame(expected <- outp,
+                 observed <- oute)
+
+df
+```
+
+```{r}
+par(mfrow = c(1, 2))
+# Change fill color : single color
+barplot(df$expected, names.arg = as.character(0:15), ylim = c(0,500))
+grid(nx = NULL, ny = NULL,
+     lty = 2, col = "gray", lwd = 1)
+par(new = T)
+barplot(df$expected, names.arg = as.character(0:15), col = "steelblue", ylim = c(0,500), main = "Expected figures", cex.main = 0.8)
+
+# Change fill color: multiple colors
+barplot(df$observed, names.arg = as.character(0:15), ylim = c(0,500))
+grid(nx = NULL, ny = NULL,
+     lty = 2, col = "gray", lwd = 1)
+par(new = T)
+barplot(df$observed, names.arg = as.character(0:15), col = "#E69F00", ylim = c(0,500),
+        main = "Observed Figures", cex.main = 0.8)
+
+# save to a png file
+
+png("~/R/Statistics_JWL/pictures/poiss_obs_accidenst.png")
+
+dev.off()
+```
+
+```{r}
+usethis::use_data(car_accidents_us)
+```
+
+
+
