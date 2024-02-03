@@ -1,0 +1,20 @@
+---
+title: "Gehlbach Testimony"
+author: "MS"
+format: html
+editor: source
+---
+
+```{r}
+# read the Gehlbach data
+
+gehlbach <- readr::read_csv("~/R/Statistics_JWL/data/gehlbach_testimony/number_of_death_by_year_and_shift.csv")
+```
+```{r}
+gehlbach$shift <- factor(gehlbach$shift)
+```
+
+```{r}
+usethis::use_data(gehlbach, overwrite = T)
+```
+
