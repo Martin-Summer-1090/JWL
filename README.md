@@ -1,12 +1,16 @@
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
 # JWL
 
-This package contains datasets for an introductory statistics course for the pre stem program of JWL.
-In this package we collect and document all datasets which we use in the course. The package also
-contains the scripts and the raw data that generate the datasets.
+The goal of JWL is to provide and document all the datasets used in the
+introductory statistics course of the PreStem program of JWL (see also
+me notes at <https://github.com/Martin-Summer-1090/Statistics_JWL>)
 
 ## Installation
-This package is not on CRAN. You can only install the the development version from
-https://github.com/Martin-Summer-1090/JWL with:
+
+You can install the development version of JWL from
+[GitHub](https://github.com/) with:
 
 ``` r
 # install.packages("devtools")
